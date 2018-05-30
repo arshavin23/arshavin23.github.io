@@ -1,0 +1,81 @@
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
+
+<html>
+  <head>
+      <meta charset="UTF-8">
+      <title>모기알 Map</title>
+      <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?clientId=eiGpp8gwbeUqngGVDLFs&submodules=geocoder"></script>
+  </head>
+  <body>
+    <div id="map" style="width:100%;height:100%;"></div>
+    <script>
+        var map = new naver.maps.Map('map', {
+            center: new naver.maps.LatLng(37.3595704, 127.105399),
+            zoom: 12
+        });
+
+        var list = new Array();
+        var marker_list = new Array();
+
+        icon1 = {    icon: {
+            url: 'red.png',
+            size: new naver.maps.Size(22, 35),
+            origin: new naver.maps.Point(0, 0),
+            anchor: new naver.maps.Point(11, 35)
+        }}
+        icon2 = {
+            url: './blue.png',
+            size: new naver.maps.Size(100, 100),
+            origin: new naver.maps.Point(0, 0),
+            anchor: new naver.maps.Point(11, 35)
+        }
+        icon3 = {    icon: {
+            url: './black.png',
+            size: new naver.maps.Size(22, 35),
+            origin: new naver.maps.Point(0, 0),
+            anchor: new naver.maps.Point(11, 35)
+        }}
+
+        //var GSSurl = "https://spreadsheets.google.com/feeds/list/1pBHPAhmeHg7SI9CjjTobrFnABn8D19L7hp-zKKO6PGQ/1/public/basic?alt=json-in-script&callback=?";
+        var GSSurl = "https://spreadsheets.google.com/feeds/list/1pBHPAhmeHg7SI9CjjTobrFnABn8D19L7hp-zKKO6PGQ/1/public/basic?alt=json-in-script";
+
+        function getContent(data, key) {
+            var temp = data.split(key + ": ")[1]
+            var value = temp.split(",")[0]
+            return value;              // The function returns the product of p1 and p2
+        }
+
+        $.ajax({ url: GSSurl , dataType : 'html' , success: function(data) {
+                //console.log(data)
+                len = data.length
+                data = data.substring(28,len - 2)
+                //console.log(data)
+                var obj = JSON.parse(data).feed.entry;
+                for(var index in obj)
+                { // 각 행에대해 아래 스크립트를 실행합니다.
+                    //console.log(obj[index].title.$t)
+                    //console.log(obj[index].content.$t)
+                    ttt = obj[index].content.$t
+                    //console.log(ttt.type)
+                    //console.log(getContent(ttt,"type"))
+                    list[index] = {"index":index, "name":obj[index].title.$t, "x":getContent(ttt,"xlocation"), "y":getContent(ttt,"ylocation")}
+                }
+                console.log(list)
+                
+                //Add Marker
+                for(var obj in list)
+                {
+                    var marker = new naver.maps.Marker({
+                        position: new naver.maps.LatLng(list[obj].x, list[obj].y),
+                        map: map,
+                        icon: icon2
+                    });
+                    console.log(marker)
+                    marker_list[obj] = marker
+                }
+                
+            } 
+        });
+      </script>
+  </body>
+</html>
