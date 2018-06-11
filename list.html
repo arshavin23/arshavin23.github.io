@@ -1,0 +1,99 @@
+<html>
+    <head>
+        <style>
+            table {
+                font-family: arial, sans-serif;
+                font-size: 30;
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            td, th {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+
+            tr:nth-child(even) {
+                background-color: #dddddd;
+            }
+        </style>
+        <script type="text/javascript" src="jquery.min.js"> </script>
+        <script>
+            function addStore(name, logo, address, status)
+            {
+                //console.log(address)
+                data =  "<table style=width:100% height=200px>"
+                data += "<tr>"
+                data += "<td width=20%>"
+                data += "<img width=200 height=200 src=img/" + logo + ">"
+                data += "</td>"
+                data += "<td width=60%>"
+                data += "<font size=40><b>" + name + "</b></font><br>"
+                data += address
+                data += "</td>"
+                data += "<td width=20%><center>"
+                if(status == "0")
+                {
+                    data += "<img width=150 src=status_red.png>"
+                }
+                else if(status == "1")
+                {
+                    data += "<img width=150 src=status_yellow.png>"
+                }   
+                else
+                {
+                    data += "<img width=150 src=status_blue.png>"
+                }
+                data += "</center></td>"
+                data += "</tr>"
+                data += "</table>"
+                data += "<br>"
+                $("#store_list_div").append(data)
+            }
+            console.log(window.location.href)
+            var page_type = window.location.href.split('?')[1]
+            console.log(page_type)
+
+            //Load Data
+            var GSSurl = "https://spreadsheets.google.com/feeds/list/1pBHPAhmeHg7SI9CjjTobrFnABn8D19L7hp-zKKO6PGQ/1/public/basic?alt=json-in-script";
+
+            function getContent(data, key) {
+                var temp = data.split(key + ": ")[1]
+                var value = temp.split(",")[0]
+                return value;              // The function returns the product of p1 and p2
+            }
+            list = []
+            $.ajax({ url: GSSurl , dataType : 'html' , success: function(data) {
+                    //console.log(data)
+                    len = data.length
+                    data = data.substring(28,len - 2)
+                    //console.log(data)
+                    var obj = JSON.parse(data).feed.entry;
+                    for(var index in obj)
+                    {
+                        ttt = obj[index].content.$t;
+                        list[index] = {"index":index, "name":obj[index].title.$t, "address":getContent(ttt,"address"), "status":getContent(ttt,"status"), "logo":getContent(ttt,"logo"), "type":getContent(ttt,"type")};
+                    }
+                    console.log(list)
+                    
+                    //Add Marker
+                    for(var obj in list)
+                    {
+                        if(page_type == "to" || page_type == undefined)
+                        {
+                            addStore(list[obj].name, list[obj].logo, list[obj].address, list[obj].status)
+                        }
+                        else if(page_type == list[obj].type)
+                        {
+                            addStore(list[obj].name, list[obj].logo, list[obj].address, list[obj].status)
+                        }
+                    }
+                } 
+            });
+        </script>
+    </head>
+    <body>
+        <div id="store_list_div"></div>
+    </body>
+</html>
